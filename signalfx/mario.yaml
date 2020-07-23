@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mario
+  labels:
+    app: mario
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mario
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: mario
+    spec:
+      containers:
+      - image: pengbai/docker-supermario
+        name: docker-supermario
+        ports:
+        - containerPort: 8080
+        resources: {}
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mario-external
+spec:
+  type: LoadBalancer
+  selector:
+    app: mario
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080

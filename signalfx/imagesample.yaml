@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imagesample
+  labels:
+    app: impagesample
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: imagesample
+  template:
+    metadata:
+      labels:
+        app: imagesample
+    spec:
+      containers:
+      - name: imagesample
+        image: k8s.gcr.io/pause:3.1-oops-i-did-a-typo-in-the-image-version
