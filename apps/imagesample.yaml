@@ -16,4 +16,4 @@ spec:
     spec:
       containers:
       - name: imagesample
-        image: k8s.gcr.io/pause:3.1-oops-i-did-a-typo-in-the-image-version
+        image: k8s.gcr.io/pause:3.1-oops-i-made-a-typo

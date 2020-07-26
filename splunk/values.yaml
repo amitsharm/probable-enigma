@@ -5,14 +5,14 @@ global:
     hec:
       protocol: https
       insecureSSL: true 
-      host: 
-      token: 
+      host: splunk
+      token: "00000000-0000-0000-0000-000000000000"
       port: 8088
 
 #local config for logging chart
 splunk-kubernetes-logging:
   containers:
-    logFormatType: cri
+    logFormatType: json
     logFormat: "%Y-%m-%dT%H:%M:%S.%N%:z"
   kubernetes:
     clusterName: my-k8s-cluster
@@ -26,15 +26,6 @@ splunk-kubernetes-logging:
   splunk:
     hec:
       indexName: em_events
-  logs:
-    mario:
-      from:
-        pod: mario
-        container: docker-supermario
-      multiline: 
-        firstline: /NOTE\:\sPicked\sup\sJDK_JAVA_OPTIONS\:|\d{2}\-\w+\-\d{4}\s\d{2}:\d{2}:\d{2}\.\d{3}\s\w+\s\[/ 
-        separator: "\n"
-
 #local config for objects chart
 splunk-kubernetes-objects:
   rbac:
@@ -44,7 +35,7 @@ splunk-kubernetes-objects:
     name: splunk-kubernetes-objects
   kubernetes:
     insecureSSL: true
-    clusterName: my-k8s-cluster
+    clusterName: MicroK8s
   objects:
     core:
       v1: [{"name":"pods", "interval":"60s"},{"name":"nodes", "interval":"60s"},{"name":"component_statuses", "interval":"60s"},{"name":"config_maps", "interval":"60s"},{"name":"namespaces", "interval":"60s"},{"name":"persistent_volumes", "interval":"60s"},{"name":"persistent_volume_claims", "interval":"60s"},{"name":"resource_quotas", "interval":"60s"},{"name":"services", "interval":"60s"},{"name":"service_accounts", "interval":"60s"},{"name":"events", "mode":"watch"},]
