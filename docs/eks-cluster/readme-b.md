@@ -1,90 +1,41 @@
-# Steps to provision EKS Cluster in a Jump Box
-## Jumpbox configuration
+# Steps to access EKS cluster
+## Login into AWS console from the Event Engine dashboard
+![Event Engine](../images/eks/credentials.png)
 
-### Before running any commands start GNU screen session
-```
-screen
-```
+Remeber to only use "us-west-2" as your region
+![Event Engine](../images/eks/eks-region.png)
 
-### Useful screen command
-```
-screen -ls # lists sessions
-screen -x <session number> # connects to your previous session 
-```
-### Configure account
-```
-export ACCOUNT_ID=$(aws sts get-caller-identity --output text --query Account)
-export AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
-```
+Select EC2 from Management Console and select Instances (running). You should see a EC2 instance called SplunkWorkshop-box
 
-### Test the variables
+![Event Engine](../images/eks/eks-splunk.png)
+
+Select SplunkWorkshop-box instance and click connect to open a SSH session
+![Event Engine](../images/eks/eks-splunk.png)
+
+## Verify EKS cluster
 ```
-test -n "$AWS_REGION" && echo AWS_REGION is "$AWS_REGION" || echo AWS_REGION is not set
+eksctl get cluster
 ```
 
-### Configure your acccount on the jumpbox
+### Update Kubectl
 ```
-echo "export ACCOUNT_ID=${ACCOUNT_ID}" | tee -a ~/.bash_profile
-echo "export AWS_REGION=${AWS_REGION}" | tee -a ~/.bash_profile
-aws configure set default.region ${AWS_REGION}
-aws configure get default.region
+aws eks --region us-west-2 update-kubeconfig --name eksworkshop-eksctl 
 ```
-
-### Generate and Import Key Pair
+### Test Kubectl
 ```
-ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
+kubectl get nodes
+```
+### Install Helm 3
+```
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
 
-aws ec2 import-key-pair --key-name "eksworkshop" --public-key-material file://~/.ssh/id_rsa.pub
+chmod 700 get_helm.sh
+./get_helm.sh
 
-aws kms create-alias --alias-name alias/eksworkshop --target-key-id $(aws kms create-key --query KeyMetadata.Arn --output text)
-
-export MASTER_ARN=$(aws kms describe-key --key-id alias/eksworkshop --query KeyMetadata.Arn --output text)
-
-echo "export MASTER_ARN=${MASTER_ARN}" | tee -a ~/.bash_profile
 ```
 
-### Enable bash completion
+### Get Workshop content
+``` 
+wget https://github.com/splunk/imt-workshop/archive/refs/heads/master.zip
+unzip master.zip
 ```
-eksctl completion bash >> ~/.bash_completion
-. /etc/profile.d/bash_completion.sh
-. ~/.bash_completion
-```
-
-### Create Cluster yaml
-```
-cat << EOF > eksworkshop.yaml
----
-apiVersion: eksctl.io/v1alpha5
-kind: ClusterConfig
-
-metadata:
-  name: eksworkshop-eksctl
-  region: ${AWS_REGION}
-
-managedNodeGroups:
-- name: nodegroup
-  desiredCapacity: 
-  iam:
-    withAddonPolicies:
-      albIngress: true
-secretsEncryption:
-  keyARN: ${MASTER_ARN}
-EOF
-```
-
-### Launch the cluster.  This will take ~15 min.
-```
-eksctl create cluster -f eksworkshop.yaml
-```
-
-### Update kubectl configuration
-```
-aws eks --region us-east-1 update-kubeconfig --name eksworkshop-eksctl
-```
-
-### Test kubectl
-```
-kubectl get nodes # if we see our 2 nodes, we know we have authenticated correctly
-```
-
-
